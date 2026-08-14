@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YJHUP.COM</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@900&family=Noto+Serif+SC:wght@200&display=swap');
+        :root {
+            --bg: #050505;
+            --text: #ffffff;
+            --dim: #222;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            cursor: crosshair;
+            -webkit-user-select: text;
+            user-select: text;
+        }
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            font-family: 'Cinzel', serif;
+        }
+        .ambient {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at var(--x, 50%) var(--y, 50%), #121212 0%, transparent 60%);
+            z-index: 0;
+        }
+        .content {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+        }
+        h1 {
+            font-size: clamp(5rem, 25vw, 15rem);
+            font-weight: 900;
+            letter-spacing: 0.1em;
+            line-height: 1;
+            background: linear-gradient(180deg, #fff 40%, #444 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: fadeIn 2.5s cubic-bezier(0.2, 0, 0.2, 1);
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        .poem {
+            writing-mode: vertical-rl;
+            font-family: 'Noto Serif SC', serif;
+            font-size: 1.1rem;
+            letter-spacing: 0.8em;
+            color: #555;
+            margin-left: 40px;
+            font-weight: 200;
+            transition: 1s;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        .poem:hover {
+            color: #fff;
+            text-shadow: 0 0 15px rgba(255,255,255,0.4);
+        }
+        .footer {
+            position: absolute;
+            bottom: 40px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            font-size: 11px;
+            letter-spacing: 3px;
+            color: var(--dim);
+            font-family: sans-serif;
+            z-index: 2;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        .footer .contact-btn {
+            color: inherit;
+            transition: 0.4s;
+            outline: none;
+        }
+        .footer .contact-btn:focus {
+            outline: none;
+        }
+        .footer .contact-btn:hover {
+            color: #fff;
+            text-shadow: 0 0 10px rgba(255,255,255,0.25);
+        }
+        /* 弹窗面板 */
+        .info-panel{
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%,-50%);
+            background-color: rgba(7,7,7,0.94);
+            border:1px solid #202020;
+            padding:44px 48px;
+            z-index:10;
+            opacity:0;
+            pointer-events:none;
+            transition: opacity 0.6s ease;
+            min-width:380px;
+            backdrop-filter: blur(6px);
+        }
+        .info-panel.show{
+            opacity:1;
+            pointer-events:auto;
+        }
+        .info-panel h2{
+            font-family:'Cinzel',serif;
+            font-size:1.8rem;
+            margin-bottom:26px;
+            text-align:center;
+            background: linear-gradient(180deg, #fff 40%, #666 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        /* 两栏布局核心 */
+        .info-item{
+            font-family:sans-serif;
+            color:#aaa;
+            margin-bottom:15px;
+            font-size:14px;
+            letter-spacing:1px;
+            display: flex;
+            gap: 24px;
+        }
+        /* 左侧名称栏 */
+        .info-label {
+            flex: 1;
+            text-align: center;
+        }
+        /* 右侧内容栏 */
+        .info-value {
+            flex: 1;
+            text-align: center;
+        }
+        .info-value a{
+            color:#ccc;
+            text-decoration:none;
+            transition:.3s;
+            outline:none;
+            -webkit-user-select: text;
+            user-select: text;
+        }
+        .info-value a:hover{
+            color:#fff;
+            text-shadow:0 0 8px rgba(255,255,255,0.22);
+        }
+        .close-btn{
+            position:absolute;
+            top:18px;
+            right:22px;
+            color:#444;
+            cursor:pointer;
+            transition:.4s;
+            font-size:22px;
+            outline:none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        .close-btn:hover{
+            color:#fff;
+        }
+        .mask{
+            position:fixed;
+            inset:0;
+            z-index:9;
+            background:rgba(0,0,0,0.45);
+            opacity:0;
+            pointer-events:none;
+            transition: opacity 0.6s ease;
+        }
+        .mask.show{
+            opacity:1;
+            pointer-events:auto;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; letter-spacing: 0.3em; filter: blur(15px); }
+            to { opacity: 1; letter-spacing: 0.1em; filter: blur(0); }
+        }
+        @media (max-width: 768px) {
+            .content { flex-direction: column; }
+            .poem { writing-mode: horizontal-tb; margin-left: 0; margin-top: 20px; letter-spacing: 0.4em; }
+            h1 { font-size: 6rem; }
+            .info-panel{
+                width:86%;
+                padding:32px 28px;
+                min-width: unset;
+            }
+            .info-item {
+                gap: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="ambient" id="ambient"></div>
+    <div class="content">
+        <h1>YJH</h1>
+        <div class="poem">纵浮槎来，浮槎去，不相逢。</div>
+    </div>
+    <div class="footer">
+        <span class="contact-btn" id="contactBtn">CONTACT</span>
+    </div>
+    <div class="mask" id="mask"></div>
+    <div class="info-panel" id="infoPanel">
+        <div class="close-btn" id="closeBtn">×</div>
+        <h2>INFO</h2>
+        <div class="info-item">
+            <div class="info-label">Email</div>
+            <div class="info-value"><a href="mailto:me@yjhup.com">me@yjhup.com</a></div>
+        </div>
+        <div class="info-item">
+            <div class="info-label">Domain</div>
+            <div class="info-value">yjhup.com</div>
+        </div>
+        <div class="info-item">
+            <div class="info-label">Telegram</div>
+            <div class="info-value"><a href="https://t.me/xyjhupcom" target="_blank">@xyjhupcom</a></div>
+        </div>
+        <div class="info-item">
+            <div class="info-label">Note</div>
+            <div class="info-value">YJH Homepage</div>
+        </div>
+    </div>
+    <script>
+        const ambient = document.getElementById('ambient');
+        const contactBtn = document.getElementById('contactBtn');
+        const infoPanel = document.getElementById('infoPanel');
+        const mask = document.getElementById('mask');
+        const closeBtn = document.getElementById('closeBtn');
+        document.addEventListener('mousemove', (e) => {
+            const x = (e.clientX / window.innerWidth) * 100;
+            const y = (e.clientY / window.innerHeight) * 100;
+            ambient.style.setProperty('--x', x + '%');
+            ambient.style.setProperty('--y', y + '%');
+        });
+        function openPanel(){
+            infoPanel.classList.add('show');
+            mask.classList.add('show');
+        }
+        function closePanel(){
+            infoPanel.classList.remove('show');
+            mask.classList.remove('show');
+        }
+        contactBtn.addEventListener('click',openPanel);
+        closeBtn.addEventListener('click',closePanel);
+        mask.addEventListener('click',closePanel);
+    </script>
+</body>
+</html>
