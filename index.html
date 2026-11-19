@@ -148,14 +148,22 @@
             transform: translate(-50%,-50%);
             background-color: rgba(7,7,7,0.94);
             border:1px solid #202020;
-            padding:44px 48px;
+            padding:38px 44px 32px;
             z-index:10;
             opacity:0;
             pointer-events:none;
             transition: opacity 0.6s ease;
-            min-width:380px;
+            min-width:430px;
+            max-width:92vw;
+            max-height:86vh;
+            overflow-y:auto;
             backdrop-filter: blur(6px);
+            scrollbar-width:thin;
+            scrollbar-color:#333 transparent;
         }
+        .info-panel::-webkit-scrollbar{ width:5px; }
+        .info-panel::-webkit-scrollbar-track{ background:transparent; }
+        .info-panel::-webkit-scrollbar-thumb{ background:#333; border-radius:3px; }
         .info-panel.show{
             opacity:1;
             pointer-events:auto;
@@ -163,7 +171,8 @@
         .info-panel h2{
             font-family:'Cinzel',serif;
             font-size:1.8rem;
-            margin-bottom:26px;
+            margin-bottom:22px;
+            letter-spacing:0.12em;
             text-align:center;
             background: linear-gradient(180deg, #fff 40%, #666 100%);
             -webkit-background-clip: text;
@@ -171,16 +180,33 @@
             -webkit-user-select: none;
             user-select: none;
         }
+        /* 分区 */
+        .panel-section{ margin-bottom:20px; }
+        .panel-section:last-child{ margin-bottom:0; }
+        .section-title{
+            font-family:sans-serif;
+            font-size:11px;
+            font-weight:200;
+            letter-spacing:3px;
+            color:#666;
+            text-align:center;
+            margin-bottom:13px;
+            padding-bottom:9px;
+            border-bottom:1px solid #1c1c1c;
+            -webkit-user-select:none;
+            user-select:none;
+        }
         /* 两栏布局核心 */
         .info-item{
             font-family:sans-serif;
             color:#aaa;
-            margin-bottom:15px;
-            font-size:14px;
+            margin-bottom:12px;
+            font-size:13px;
             letter-spacing:1px;
             display: flex;
-            gap: 24px;
+            gap: 20px;
         }
+        .panel-section .info-item:last-child{ margin-bottom:0; }
         /* 左侧名称栏 */
         .info-label {
             flex: 1;
@@ -191,6 +217,7 @@
             flex: 1;
             text-align: center;
         }
+        .info-value.full{ flex:1 1 100%; }
         .info-value a{
             color:#ccc;
             text-decoration:none;
@@ -203,6 +230,13 @@
             color:#fff;
             text-shadow:0 0 8px rgba(255,255,255,0.22);
         }
+        /* 数值：运行时间 / 访问统计 */
+        .stat-num{
+            color:#e0e0e0;
+            font-variant-numeric:tabular-nums;
+            text-shadow:0 0 10px rgba(255,255,255,0.18);
+        }
+        .copyright-line{ line-height:1.9; color:#888; }
         .close-btn{
             position:absolute;
             top:18px;
@@ -239,14 +273,23 @@
             .content { flex-direction: column; }
             .poem { writing-mode: horizontal-tb; margin-left: 0; margin-top: 20px; letter-spacing: 0.4em; }
             h1 { font-size: 6rem; }
+            .footer { bottom: 72px; gap: 22px; font-size: 10px; letter-spacing: 2px; }
+            .copyright {
+                bottom: 14px;
+                font-size: 9px;
+                letter-spacing: 1px;
+                line-height: 1.9;
+                padding: 0 10px;
+            }
             .info-panel{
-                width:86%;
-                padding:32px 28px;
+                width:92%;
+                padding:30px 20px 26px;
                 min-width: unset;
+                max-height:88vh;
             }
-            .info-item {
-                gap: 12px;
-            }
+            .info-panel h2{ font-size:1.5rem; }
+            .info-item { gap: 10px; font-size: 12px; }
+            .section-title { letter-spacing: 2px; }
         }
     </style>
 </head>
@@ -259,28 +302,72 @@
     <div class="footer">
         <a class="footer-link" href="https://blog.yjhup.com" target="_blank" rel="noopener noreferrer">BLOG</a>
         <a class="footer-link" href="https://website.web.yjhup.com" target="_blank" rel="noopener noreferrer">PROJECTS</a>
-        <span class="footer-link" id="contactBtn">CONTACT</span>
+        <span class="footer-link" id="contactBtn">MORE</span>
     </div>
     <div class="copyright">
         <div><a href="https://icp.gov.moe/?keyword=20266613" target="_blank" rel="noopener noreferrer">萌ICP备20266613号</a></div>
-        <div>Copyright © 2026 | Powered By <a href="https://yjhup.com" target="_blank" rel="noopener noreferrer">YJH</a></div>
+        <div>Copyright © 2026 <a href="https://yjhup.com" target="_blank" rel="noopener noreferrer">YJH</a>. All rights reserved. | Powered by <a href="https://yjhup.com" target="_blank" rel="noopener noreferrer">YJH</a></div>
     </div>
     <div class="mask" id="mask"></div>
     <div class="info-panel" id="infoPanel">
         <div class="close-btn" id="closeBtn">×</div>
-        <h2>INFO</h2>
-        <div class="info-item">
-            <div class="info-label">Email</div>
-            <div class="info-value"><a href="mailto:me@yjhup.com">me@yjhup.com</a></div>
-        </div>
-        <div class="info-item">
-            <div class="info-label">Telegram</div>
-            <div class="info-value"><a href="https://t.me/xyjhupcom" target="_blank" rel="noopener noreferrer">@xyjhupcom</a></div>
-        </div>
-        <div class="info-item">
-            <div class="info-label">GitHub</div>
-            <div class="info-value"><a href="https://github.com/YJHxx2561" target="_blank" rel="noopener noreferrer">@YJHxx2561</a></div>
-        </div>
+        <h2>MORE</h2>
+
+        <!-- 联系信息 -->
+        <section class="panel-section">
+            <div class="section-title">联系信息</div>
+            <div class="info-item">
+                <div class="info-label">Email</div>
+                <div class="info-value"><a href="mailto:me@yjhup.com">me@yjhup.com</a></div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Telegram</div>
+                <div class="info-value"><a href="https://t.me/xyjhupcom" target="_blank" rel="noopener noreferrer">@xyjhupcom</a></div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">GitHub</div>
+                <div class="info-value"><a href="https://github.com/YJHxx2561" target="_blank" rel="noopener noreferrer">@YJHxx2561</a></div>
+            </div>
+        </section>
+
+        <!-- 本站运行时间 -->
+        <section class="panel-section">
+            <div class="section-title">本站运行时间</div>
+            <div class="info-item">
+                <div class="info-value full"><span class="stat-num" id="uptime">—</span></div>
+            </div>
+        </section>
+
+        <!-- 访问统计 -->
+        <section class="panel-section">
+            <div class="section-title">访问统计</div>
+            <div class="info-item">
+                <div class="info-label">本页访问人次</div>
+                <div class="info-value"><span class="stat-num" id="page_pv">—</span></div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">本页访问人数</div>
+                <div class="info-value"><span class="stat-num" id="page_uv">—</span></div>
+            </div>
+        </section>
+
+        <!-- 备案信息 -->
+        <section class="panel-section">
+            <div class="section-title">备案信息</div>
+            <div class="info-item">
+                <div class="info-value full"><a href="https://icp.gov.moe/?keyword=20266613" target="_blank" rel="noopener noreferrer">萌ICP备20266613号</a></div>
+            </div>
+        </section>
+
+        <!-- 版权信息 -->
+        <section class="panel-section">
+            <div class="section-title">版权信息</div>
+            <div class="info-item">
+                <div class="info-value full copyright-line">
+                    Copyright © 2026 <a href="https://yjhup.com" target="_blank" rel="noopener noreferrer">YJH</a>. All rights reserved. | Powered by <a href="https://yjhup.com" target="_blank" rel="noopener noreferrer">YJH</a>
+                </div>
+            </div>
+        </section>
     </div>
     <script>
         const ambient = document.getElementById('ambient');
@@ -305,6 +392,24 @@
         contactBtn.addEventListener('click',openPanel);
         closeBtn.addEventListener('click',closePanel);
         mask.addEventListener('click',closePanel);
+
+        // 本站运行时间：自 2026 年 8 月 14 日起实时计时
+        const uptimeEl = document.getElementById('uptime');
+        const startTime = new Date(2026, 7, 14, 0, 0, 0); // 月份从 0 开始，7 = 8 月
+        function updateUptime(){
+            const diff = Math.max(0, Date.now() - startTime.getTime());
+            const days = Math.floor(diff / 86400000);
+            const hours = Math.floor((diff % 86400000) / 3600000);
+            const minutes = Math.floor((diff % 3600000) / 60000);
+            const seconds = Math.floor((diff % 60000) / 1000);
+            if (uptimeEl) {
+                uptimeEl.textContent = days + ' 天 ' + hours + ' 小时 ' + minutes + ' 分 ' + seconds + ' 秒';
+            }
+        }
+        updateUptime();
+        setInterval(updateUptime, 1000);
     </script>
+    <!-- 访问统计：与 SunPanel 使用同一后端 -->
+    <script defer src="https://stats.web.yjhup.com/js/index.min.js"></script>
 </body>
 </html>
