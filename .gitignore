@@ -1,0 +1,4 @@
+# WorkBuddy 相关文件（本地工具数据，不提交）
+.workbuddy/
+*.genie
+.wbapp_*/
