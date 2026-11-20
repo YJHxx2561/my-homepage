@@ -230,6 +230,34 @@
             color:#fff;
             text-shadow:0 0 8px rgba(255,255,255,0.22);
         }
+        /* 联系方式图标 */
+        .contact-icons{
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            gap:38px;
+            padding:6px 0 2px;
+        }
+        .contact-icon{
+            color:#8a8a8a;
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            transition:.4s;
+            outline:none;
+        }
+        .contact-icon svg{
+            width:26px;
+            height:26px;
+            fill:currentColor;
+            display:block;
+        }
+        .contact-icon:hover,
+        .contact-icon:focus{
+            color:#fff;
+            filter:drop-shadow(0 0 8px rgba(255,255,255,0.45));
+            transform:translateY(-2px);
+        }
         /* 数值：运行时间 / 访问统计 */
         .stat-num{
             color:#e0e0e0;
@@ -290,6 +318,8 @@
             .info-panel h2{ font-size:1.5rem; }
             .info-item { gap: 10px; font-size: 12px; }
             .section-title { letter-spacing: 2px; }
+            .contact-icons { gap: 30px; }
+            .contact-icon svg { width: 24px; height: 24px; }
         }
     </style>
 </head>
@@ -316,17 +346,16 @@
         <!-- 联系信息 -->
         <section class="panel-section">
             <div class="section-title">联系信息</div>
-            <div class="info-item">
-                <div class="info-label">Email</div>
-                <div class="info-value"><a href="mailto:me@yjhup.com">me@yjhup.com</a></div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">Telegram</div>
-                <div class="info-value"><a href="https://t.me/xyjhupcom" target="_blank" rel="noopener noreferrer">@xyjhupcom</a></div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">GitHub</div>
-                <div class="info-value"><a href="https://github.com/YJHxx2561" target="_blank" rel="noopener noreferrer">@YJHxx2561</a></div>
+            <div class="contact-icons">
+                <a class="contact-icon" href="https://github.com/YJHxx2561" target="_blank" rel="noopener noreferrer" title="GitHub" aria-label="GitHub">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 .5C5.73.5.5 5.73.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56 0-.28-.01-1.02-.02-2-3.2.7-3.88-1.54-3.88-1.54-.52-1.33-1.28-1.69-1.28-1.69-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.56-.29-5.25-1.28-5.25-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .96-.31 3.17 1.18.92-.26 1.9-.39 2.88-.39.98 0 1.96.13 2.88.39 2.2-1.49 3.16-1.18 3.16-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.4-5.27 5.68.41.36.78 1.06.78 2.14 0 1.54-.01 2.78-.01 3.16 0 .31.21.67.8.56C20.21 21.39 23.5 17.08 23.5 12c0-6.27-5.23-11.5-11.5-11.5z"/></svg>
+                </a>
+                <a class="contact-icon" href="mailto:me@yjhup.com" title="Email" aria-label="Email">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M2 4h20c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H2c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2zm10 9.2L3.6 6.3c-.4-.3-1 0-1 .5V7c0 .3.1.5.3.7l9.1 6.9c.6.5 1.4.5 2 0l9.1-6.9c.2-.2.3-.4.3-.7v-.2c0-.5-.6-.8-1-.5L12 13.2z"/></svg>
+                </a>
+                <a class="contact-icon" href="https://t.me/xyjhupcom" target="_blank" rel="noopener noreferrer" title="Telegram" aria-label="Telegram">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm5.56 8.18-1.87 8.83c-.14.63-.51.78-1.03.49l-2.85-2.1-1.37 1.32c-.15.15-.28.28-.57.28l.2-2.87 5.22-4.72c.23-.2-.05-.31-.35-.11L7.6 13.36l-2.79-.87c-.61-.19-.62-.61.13-.9l10.9-4.2c.51-.19.95.12.72.79z"/></svg>
+                </a>
             </div>
         </section>
 
