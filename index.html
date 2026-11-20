@@ -33,7 +33,7 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            cursor: crosshair;
+            cursor: default;
             -webkit-user-select: text;
             user-select: text;
         }
@@ -53,6 +53,86 @@
             height: 100%;
             background: radial-gradient(circle at var(--x, 50%) var(--y, 50%), #121212 0%, transparent 60%);
             z-index: 0;
+        }
+        /* ===== 3D 酷炫跟随光标（渐进增强，不支持时回退原生鼠标） ===== */
+        .cursor-fx{
+            position:fixed;
+            top:0; left:0;
+            width:0; height:0;
+            z-index:9999;
+            pointer-events:none;
+        }
+        body.custom-cursor,
+        body.custom-cursor *{ cursor:none !important; }
+        /* 发光核心点 */
+        .cursor-dot{
+            position:absolute;
+            top:0; left:0;
+            width:7px; height:7px;
+            margin:-3.5px 0 0 -3.5px;
+            border-radius:50%;
+            background:#fff;
+            box-shadow:0 0 14px 4px rgba(255,255,255,.75), 0 0 30px 10px rgba(255,255,255,.25);
+            will-change:transform;
+        }
+        /* 旋转虚线光环 */
+        .cursor-halo{
+            position:absolute;
+            top:0; left:0;
+            width:46px; height:46px;
+            margin:-23px 0 0 -23px;
+            border:1px dashed rgba(255,255,255,.6);
+            border-radius:50%;
+            box-shadow:0 0 18px rgba(255,255,255,.12), inset 0 0 14px rgba(255,255,255,.06);
+            transform-style:preserve-3d;
+            -webkit-transform-style:preserve-3d;
+            will-change:transform;
+            transition:border-color .35s, box-shadow .35s;
+        }
+        .cursor-halo::before{
+            content:'';
+            position:absolute;
+            inset:-6px;
+            border:1px solid rgba(255,255,255,.14);
+            border-radius:50%;
+        }
+        .cursor-halo::after{
+            content:'';
+            position:absolute;
+            top:-3px; left:50%;
+            width:3px; height:3px;
+            margin-left:-1.5px;
+            border-radius:50%;
+            background:#fff;
+            box-shadow:0 0 8px 2px rgba(255,255,255,.7);
+        }
+        /* 拖尾粒子 */
+        .cursor-trail{
+            position:absolute;
+            top:0; left:0;
+            width:10px; height:10px;
+            margin:-5px 0 0 -5px;
+            border-radius:50%;
+            background:radial-gradient(circle, rgba(255,255,255,.9), rgba(255,255,255,0) 70%);
+            will-change:transform, opacity;
+        }
+        /* 点击波纹 */
+        .cursor-ripple{
+            position:absolute;
+            top:0; left:0;
+            width:20px; height:20px;
+            margin:-10px 0 0 -10px;
+            border:1px solid #fff;
+            border-radius:50%;
+            opacity:0;
+            will-change:transform, opacity;
+        }
+        body.custom-cursor.hovering .cursor-halo{
+            border-color:rgba(255,255,255,.95);
+            box-shadow:0 0 30px rgba(255,255,255,.35), inset 0 0 18px rgba(255,255,255,.15);
+        }
+        @media (hover:none),(pointer:coarse){
+            .cursor-fx{ display:none !important; }
         }
         .content {
             position: relative;
@@ -325,6 +405,16 @@
 </head>
 <body>
     <div class="ambient" id="ambient"></div>
+    <div class="cursor-fx" id="cursorFx" aria-hidden="true">
+        <div class="cursor-halo" id="cursorHalo"></div>
+        <div class="cursor-trail" id="trail1"></div>
+        <div class="cursor-trail" id="trail2"></div>
+        <div class="cursor-trail" id="trail3"></div>
+        <div class="cursor-trail" id="trail4"></div>
+        <div class="cursor-trail" id="trail5"></div>
+        <div class="cursor-dot" id="cursorDot"></div>
+        <div class="cursor-ripple" id="cursorRipple"></div>
+    </div>
     <div class="content">
         <h1>YJH</h1>
         <div class="poem">纵浮槎来，浮槎去，不相逢。</div>
@@ -437,6 +527,113 @@
         }
         updateUptime();
         setInterval(updateUptime, 1000);
+
+        // ===== 3D 酷炫跟随光标（渐进增强）=====
+        // 支持 CSS 3D transform 且非粗指针（触屏）设备时启用；
+        // 其余浏览器保留原生鼠标光标，功能完全不受影响。
+        (function(){
+            const supports3D = !!(window.CSS && CSS.supports &&
+                CSS.supports('transform', 'perspective(500px) rotateX(10deg)'));
+            const isTouch = window.matchMedia &&
+                window.matchMedia('(pointer: coarse)').matches;
+            if (!supports3D || isTouch) return;
+
+            const fx     = document.getElementById('cursorFx');
+            const halo   = document.getElementById('cursorHalo');
+            const dot    = document.getElementById('cursorDot');
+            const ripple = document.getElementById('cursorRipple');
+            if (!fx || !halo || !dot) return;
+            const trails = [1,2,3,4,5].map(i => document.getElementById('trail' + i)).filter(Boolean);
+
+            document.body.classList.add('custom-cursor');
+
+            let mouseX = window.innerWidth / 2, mouseY = window.innerHeight / 2;
+            let hx = mouseX, hy = mouseY;          // 光环（阻尼跟随）
+            let lastX = mouseX, lastY = mouseY;
+            let vx = 0, vy = 0;                    // 平滑后的移动速度
+            let spin = 0;                          // 光环自转角度
+            const reduce = window.matchMedia &&
+                window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+            // 拖尾粒子的历史位置
+            const pts = trails.map(() => ({ x: mouseX, y: mouseY }));
+
+            document.addEventListener('mousemove', (e) => {
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+                fx.style.opacity = '1';
+            }, { passive: true });
+            document.addEventListener('mouseleave', () => { fx.style.opacity = '0'; });
+            document.addEventListener('mouseenter', () => { fx.style.opacity = '1'; });
+
+            // 点击波纹：从点击点扩散
+            let rippleAnim = null;
+            document.addEventListener('mousedown', (e) => {
+                if (reduce || !ripple) return;
+                if (rippleAnim) cancelAnimationFrame(rippleAnim);
+                const rx = e.clientX, ry = e.clientY;
+                let t = 0;
+                ripple.style.opacity = '0.9';
+                (function step(){
+                    t += 0.06;
+                    const s = 1 + t * 4;
+                    ripple.style.transform = 'translate3d(' + rx + 'px,' + ry + 'px,0) scale(' + s + ')';
+                    ripple.style.opacity = String(Math.max(0, 0.9 - t * 0.9));
+                    if (t < 1) rippleAnim = requestAnimationFrame(step);
+                })();
+            });
+
+            // 悬停在可点击元素上时，光环高亮放大
+            const interactive = 'a, button, .close-btn, .footer-link';
+            document.addEventListener('mouseover', (e) => {
+                if (e.target instanceof Element && e.target.closest(interactive)) {
+                    document.body.classList.add('hovering');
+                }
+            });
+            document.addEventListener('mouseout', (e) => {
+                if (e.target instanceof Element && e.target.closest(interactive)) {
+                    document.body.classList.remove('hovering');
+                }
+            });
+
+            function render(){
+                const rawVx = mouseX - lastX;
+                const rawVy = mouseY - lastY;
+                lastX = mouseX; lastY = mouseY;
+                vx += (rawVx - vx) * 0.15;
+                vy += (rawVy - vy) * 0.15;
+
+                // 光环阻尼跟随；核心点直接跟随鼠标坐标
+                hx += (mouseX - hx) * 0.16;
+                hy += (mouseY - hy) * 0.16;
+
+                const speed = Math.min(Math.sqrt(vx * vx + vy * vy), 50);
+                const tiltX = reduce ? 0 : Math.max(-35, Math.min(35, -vy * 1.5));
+                const tiltY = reduce ? 0 : Math.max(-35, Math.min(35,  vx * 1.5));
+                spin += reduce ? 0 : 0.6 + speed * 0.15;
+                const scale = 1 + speed / 120 + (document.body.classList.contains('hovering') ? 0.3 : 0);
+
+                dot.style.transform = 'translate3d(' + mouseX + 'px,' + mouseY + 'px,0)';
+                halo.style.transform =
+                    'translate3d(' + hx + 'px,' + hy + 'px,0) ' +
+                    'perspective(520px) rotateX(' + tiltX + 'deg) rotateY(' + tiltY + 'deg) ' +
+                    'rotate(' + spin + 'deg) scale(' + scale + ')';
+
+                // 拖尾：每个粒子平滑追逐前一个，尺寸与透明度递减
+                let tx = mouseX, ty = mouseY;
+                pts.forEach((p, i) => {
+                    p.x += (tx - p.x) * 0.32;
+                    p.y += (ty - p.y) * 0.32;
+                    const k = 1 - i / (pts.length + 1);
+                    trails[i].style.transform =
+                        'translate3d(' + p.x + 'px,' + p.y + 'px,0) scale(' + k.toFixed(2) + ')';
+                    trails[i].style.opacity = (k * 0.7).toFixed(2);
+                    tx = p.x; ty = p.y;
+                });
+                requestAnimationFrame(render);
+            }
+            requestAnimationFrame(render);
+        })();
     </script>
     <!-- 访问统计：与 SunPanel 使用同一后端 -->
     <script defer src="https://stats.web.yjhup.com/js/index.min.js"></script>
